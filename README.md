@@ -1,3 +1,5 @@
+![Banner](banner.png)
+
 # dso-image-metadata-remover
 A command-line tool to remove potentially sensitive metadata (EXIF, IPTC, XMP) from image files. Uses Pillow library. - Focused on Tools for sanitizing and obfuscating sensitive data within text files and structured data formats
 
