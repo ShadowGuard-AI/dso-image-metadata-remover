@@ -16,7 +16,7 @@ def setup_argparse():
     """
     parser = argparse.ArgumentParser(description='Removes metadata from image files (EXIF, IPTC, XMP).')
     parser.add_argument('input_file', help='The input image file.')
-    parser.add_argument('output_file', help='The output image file (will overwrite if exists).')
+    parser.add_argument('output_file', help='The output image file (will overwrite if exists). It must not be the input file itself: if the resolved output path is the same file as the input, the run is refused and nothing is written.')
     parser.add_argument('--keep-color-profile', action='store_true', help='Preserve color profile') # Feature request
     return parser
 
@@ -38,6 +38,13 @@ def remove_metadata(input_file, output_file, keep_color_profile=False):
         if not os.path.isfile(input_file):
             raise ValueError(f"Input file is not a regular file: {input_file}")
 
+        # Refuse in place output: the resolved output path must not be the
+        # input file itself (same string, ./ alias, or symlink spelling).
+        if os.path.realpath(output_file) == os.path.realpath(input_file):
+            raise ValueError(
+                f"Output file resolves to the input file: {output_file}. "
+                "Choose a different output path; the input file was not modified."
+            )
 
         img = Image.open(input_file)
 
