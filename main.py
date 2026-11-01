@@ -48,14 +48,26 @@ def remove_metadata(input_file, output_file, keep_color_profile=False):
 
         img = Image.open(input_file)
 
-        # Clean EXIF data
+        # The strip is a pixel rebuild: a fresh image in the same mode and
+        # size is filled with the source pixels, and everything that is not
+        # pixel data is left behind. That takes more than the advertised
+        # EXIF, IPTC, and XMP. A palette image loses its palette with the
+        # metadata, because the new image starts with an empty one, and a
+        # multi frame image (an animated GIF, a multi page TIFF) keeps only
+        # the frame that was open, the rest are not copied at all. Nothing
+        # here checks whether the source had any metadata, so an image
+        # that was already clean is rebuilt and reported the same way.
         data = list(img.getdata())
         image_without_exif = Image.new(img.mode, img.size)
         image_without_exif.putdata(data)
 
-        # Save the image without metadata
-        # Using 'quality' to preserve image quality as much as possible for JPEGs.
-        # Ensure we preserve the file format for consistency
+        # The save options below are chosen from the INPUT extension,
+        # while the format actually written is inferred by the save call
+        # from the OUTPUT name, and the two are never reconciled. Name the
+        # output .png for a .jpg input and the JPEG options travel into a
+        # PNG save, where some are meaningless; name it .jpg for a
+        # palette or RGBA source and the conversion the format needs never
+        # happens, because only pixels were carried across.
         file_extension = os.path.splitext(input_file)[1].lower()
 
         save_options = {}
